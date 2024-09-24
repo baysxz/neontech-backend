@@ -23,3 +23,39 @@ customersRouter.post("/", async (request, response) => {
     response.status(400).json({ message: "aldaa garlaa" });
   }
 });
+
+customersRouter.put("/:customerId", async (request, response) => {
+  const { customerId } = request.params;
+  const { firstName, lastName, email, address } = request.body;
+
+  try {
+    const updatedUser = await sql`UPDATE customers
+                SET firstName = ${firstName},
+                lastName = ${lastName},
+                email = ${email},
+                address = ${address}
+                WHERE customerid=${customerId}
+                RETURNING *`;
+
+    response
+      .status(200)
+      .json({
+        message: `updated ${customerId} customer`,
+        customer: updatedUser[0],
+      });
+  } catch (error) {
+    console.log(error);
+    response.status(400).json({ message: "failed" });
+  }
+});
+
+customersRouter.delete("/", async (request, response) => {
+  const { id } = request.body;
+
+  try {
+    await sql`DELETE FROM customers WHERE customerid=${id}`;
+    response.status(200).json({ message: "deleted" });
+  } catch (error) {
+    response.status(400).json({ message: "failed" });
+  }
+});
